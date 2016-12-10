@@ -151,18 +151,36 @@ local function loadImageRandPoint(path)
 --    os.exit()
 
     local imB = input_lab[{{2,3},{},{}}]:div(110.0)
+    -- print('imB', imB:size())
 
+    -- Randomly sample a single point
+    local P = 5+math.ceil(torch.uniform(1e-2, 40)) --random half-patch size
     local a_ind = math.ceil(torch.uniform(1e-2, oW))
     local b_ind = math.ceil(torch.uniform(1e-2, oH))
-    -- print(a_ind)
-    -- print(b_ind)
-    local samp_ab = torch.zeros(imB:size())
-    samp_ab[{{},{a_ind},{b_ind}}] = input_lab[{{2,3},{a_ind},{b_ind}}]
 
+    local a_min = math.max(a_ind-P,1)
+    local a_max = math.min(a_ind+P,oW)
+    local b_min = math.max(b_ind-P,1)
+    local b_max = math.min(b_ind+P,oH)
+
+    -- print('a_min',a_min,'a_ind',a_ind,'a_max',a_max)
+    -- print('b_min',b_min,'b_ind',b_ind,'b_max',b_max)
+
+    local samp_ab = torch.zeros(imB:size())
+    -- samp_ab[{{},{a_ind},{b_ind}}] = input_lab[{{2,3},{a_ind},{b_ind}}]
+    -- print(samp_ab[{{},{a_min,a_max},{b_min,b_max}}]:size())
+    -- print(input_lab[{{2,3},{a_min,a_max},{b_min,b_max}}]:size())
+
+    -- samp_ab[{{},{a_min,a_max},{b_min,b_max}}] = input_lab[{{2,3},{a_min,a_max},{b_min,b_max}}]
+    samp_ab[{{1},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{2},{a_min,a_max},{b_min,b_max}}])
+    samp_ab[{{2},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{3},{a_min,a_max},{b_min,b_max}}])
+
+    -- Mask for where ground truth color is
     local mask_ab = torch.zeros(imB[{{1},{},{}}]:size())
     mask_ab[{{},{a_ind},{b_ind}}] = 1
+    mask_ab[{{},{a_min,a_max},{b_min,b_max}}] = 1
 
-    -- local imA = input_lab[{{1}, {}, {} }]:div(50.0) - 1.0
+    -- Lightness image
     local im_L = input_lab[{{1}, {}, {} }]:div(50.0) - 1.0
 
     -- print('im_L', im_L:size())
@@ -170,8 +188,9 @@ local function loadImageRandPoint(path)
     -- print('mask_ab',mask_ab:size())
 
     local imA = torch.cat(im_L, samp_ab ,1)
-    -- print('imA 1st', imA:size())
+    -- local imA = torch.cat(im_L, imB ,1) -- just for debugging, add whole color image
     imA = torch.cat(imA, mask_ab, 1)
+    -- print('imA 1st', imA:size())
     -- print('imA 2nd', imA:size())
 
     local imAB = torch.cat(imA, imB, 1)
