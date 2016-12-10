@@ -343,7 +343,8 @@ for epoch = 1, opt.niter do
                 -- print('real_A in display',real_A:size())
                 -- real_A = real_A[{{1},{},{}}]
                 -- print('real_A - 2nd',real_A:size())
-                local real_A_s = util.scaleBatch(real_A:float()[{{1},{},{}}],100,100)
+                local real_A_s = util.scaleBatch(real_A:float()[{{},{1,4},{},{}}],100,100)
+                -- local real_A_s = util.scaleBatch(real_A:float()[{{},{},{},{}}],100,100)
                 local fake_B_s = util.scaleBatch(fake_B:float(),100,100)
                 local real_B_s = util.scaleBatch(real_B:float(),100,100)
                 pcall(disp.image(util.deprocessL_batch(real_A_s), {win=opt.display_id, title=opt.name .. ' input'}))
