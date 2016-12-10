@@ -154,31 +154,35 @@ local function loadImageRandPoint(path)
     -- print('imB', imB:size())
 
     -- Randomly sample a single point
-    local P = 5+math.ceil(torch.uniform(1e-2, 40)) --random half-patch size
-    local a_ind = math.ceil(torch.uniform(1e-2, oW))
-    local b_ind = math.ceil(torch.uniform(1e-2, oH))
-
-    local a_min = math.max(a_ind-P,1)
-    local a_max = math.min(a_ind+P,oW)
-    local b_min = math.max(b_ind-P,1)
-    local b_max = math.min(b_ind+P,oH)
-
-    -- print('a_min',a_min,'a_ind',a_ind,'a_max',a_max)
-    -- print('b_min',b_min,'b_ind',b_ind,'b_max',b_max)
+    local N = -1 + math.ceil(torch.uniform(1e-2, 7))
 
     local samp_ab = torch.zeros(imB:size())
     -- samp_ab[{{},{a_ind},{b_ind}}] = input_lab[{{2,3},{a_ind},{b_ind}}]
     -- print(samp_ab[{{},{a_min,a_max},{b_min,b_max}}]:size())
     -- print(input_lab[{{2,3},{a_min,a_max},{b_min,b_max}}]:size())
+    local mask_ab = torch.zeros(imB[{{1},{},{}}]:size())
+
+    for nn = 1,N do
+      local P = 2+math.ceil(torch.uniform(1e-2, 5)) --random half-patch size
+      local a_ind = math.ceil(torch.uniform(1e-2, oW))
+      local b_ind = math.ceil(torch.uniform(1e-2, oH))
+
+      local a_min = math.max(a_ind-P,1)
+      local a_max = math.min(a_ind+P,oW)
+      local b_min = math.max(b_ind-P,1)
+      local b_max = math.min(b_ind+P,oH)
+
+      samp_ab[{{1},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{2},{a_min,a_max},{b_min,b_max}}])
+      samp_ab[{{2},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{3},{a_min,a_max},{b_min,b_max}}])
+
+      -- Mask for where ground truth color is
+      mask_ab[{{},{a_min,a_max},{b_min,b_max}}] = 1
+    end
+
+    -- print('a_min',a_min,'a_ind',a_ind,'a_max',a_max)
+    -- print('b_min',b_min,'b_ind',b_ind,'b_max',b_max)
 
     -- samp_ab[{{},{a_min,a_max},{b_min,b_max}}] = input_lab[{{2,3},{a_min,a_max},{b_min,b_max}}]
-    samp_ab[{{1},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{2},{a_min,a_max},{b_min,b_max}}])
-    samp_ab[{{2},{a_min,a_max},{b_min,b_max}}] = torch.mean(input_lab[{{3},{a_min,a_max},{b_min,b_max}}])
-
-    -- Mask for where ground truth color is
-    local mask_ab = torch.zeros(imB[{{1},{},{}}]:size())
-    mask_ab[{{},{a_ind},{b_ind}}] = 1
-    mask_ab[{{},{a_min,a_max},{b_min,b_max}}] = 1
 
     -- Lightness image
     local im_L = input_lab[{{1}, {}, {} }]:div(50.0) - 1.0

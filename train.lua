@@ -375,6 +375,12 @@ for epoch = 1, opt.niter do
                         if image_out==nil then image_out = torch.cat(util.deprocessL(real_A[i2]:float()),util.deprocessLAB(real_A[i2]:float(), fake_B[i2]:float()),3)/255.0
                         else image_out = torch.cat(image_out, torch.cat(util.deprocessL(real_A[i2]:float()),util.deprocessLAB(real_A[i2]:float(), fake_B[i2]:float()),3)/255.0, 2) end
                     end
+                elseif opt.preprocess == 'color_randpoint' then 
+                    -- for i2=1, fake_B:size(1) do
+                        -- if image_out==nil then image_out = torch.cat(util.deprocessL(real_A[i2]:float()),util.deprocessLAB(real_A[i2]:float(), fake_B[i2]:float()),3)/255.0
+                        -- else image_out = torch.cat(image_out, torch.cat(util.deprocessL(real_A[i2]:float()),util.deprocessLAB(real_A[i2]:float(), fake_B[i2]:float()),3)/255.0, 2) end
+                    -- end
+                    print('Save not implemented')
                 else
                     for i2=1, fake_B:size(1) do
                         if image_out==nil then image_out = torch.cat(util.deprocess(real_A[i2]:float()),util.deprocess(fake_B[i2]:float()),3)
@@ -382,7 +388,7 @@ for epoch = 1, opt.niter do
                     end
                 end
             end
-            image.save(paths.concat(opt.checkpoints_dir,  opt.name , counter .. '_train_res.png'), image_out)
+            -- image.save(paths.concat(opt.checkpoints_dir,  opt.name , counter .. '_train_res.png'), image_out)
             
             opt.serial_batches=serial_batches
         end
